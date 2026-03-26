@@ -1,0 +1,32 @@
+{
+    "schemaVersion":  1,
+    "id":  "kmos-addon",
+    "version":  "${version}",
+    "name":  "KMOS Addon",
+    "description":  "Utility and automation modules for Meteor Client.",
+    "authors":  [
+                    "_KMOS_"
+                ],
+    "environment":  "client",
+    "entrypoints":  {
+                        "meteor":  [
+                                       "kmos.addon.KmosAddon"
+                                   ]
+                    },
+    "custom":  {
+                   "meteor-client:color":  "225,25,25",
+                   "modmenu":  {
+                                   "parent":  {
+                                                  "id":  "meteor-client"
+                                              }
+                               }
+               },
+    "depends":  {
+                    "java":  "\u003e=21",
+                    "minecraft":  [
+                                      "${mc_version}"
+                                  ],
+                    "meteor-client":  "*"
+                }
+}
+
