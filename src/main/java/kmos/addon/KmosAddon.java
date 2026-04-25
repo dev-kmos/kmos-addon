@@ -3,18 +3,22 @@ package kmos.addon;
 import com.mojang.logging.LogUtils;
 import kmos.addon.modules.AutoAntiAfk;
 import kmos.addon.modules.AutoChestTransfer;
+import kmos.addon.modules.AutoEnchantTableBatch;
 import kmos.addon.modules.AutoTrade;
 import kmos.addon.modules.AutoVillagerClick;
+import kmos.addon.modules.AutoShulkerPack;
 import kmos.addon.modules.BaritoneMaterialDebug;
+import kmos.addon.modules.EnchantContainerAnalyzer;
 import kmos.addon.modules.ElytraAutoSwap;
 import kmos.addon.modules.MasterMute;
 import kmos.addon.modules.ModuleSetupsDynamic;
 import kmos.addon.hud.MasterMuteHud;
 import kmos.addon.profiles.ProfilesRegistry;
 import kmos.addon.settings.ChestEntryListSetting;
+import kmos.addon.settings.EnchantStorageEntryListSetting;
+import kmos.addon.settings.ActionButtonSetting;
 import kmos.addon.settings.TradeEntryListSetting;
 import kmos.addon.util.AddonLog;
-import meteordevelopment.meteorclient.MeteorClient;
 import meteordevelopment.meteorclient.addons.MeteorAddon;
 import meteordevelopment.meteorclient.systems.hud.Hud;
 import meteordevelopment.meteorclient.systems.hud.HudGroup;
@@ -40,13 +44,25 @@ public class KmosAddon extends MeteorAddon {
         SettingsWidgetFactory.registerCustomFactory(TradeEntryListSetting.class, theme ->
             (table, setting) -> TradeEntryListSetting.fillTable(theme, table, (TradeEntryListSetting) setting)
         );
+        SettingsWidgetFactory.registerCustomFactory(EnchantStorageEntryListSetting.class, theme ->
+            (table, setting) -> EnchantStorageEntryListSetting.fillTable(theme, table, (EnchantStorageEntryListSetting) setting)
+        );
+        SettingsWidgetFactory.registerCustomFactory(ActionButtonSetting.class, theme ->
+            (table, setting) -> {
+                var button = table.add(theme.button(((ActionButtonSetting) setting).getButtonText())).expandX().widget();
+                button.action = ((ActionButtonSetting) setting)::press;
+            }
+        );
 
         Modules.get().add(new ElytraAutoSwap());
         Modules.get().add(new AutoAntiAfk());
         Modules.get().add(new AutoChestTransfer());
         Modules.get().add(new AutoTrade());
         Modules.get().add(new AutoVillagerClick());
+        Modules.get().add(new AutoShulkerPack());
         Modules.get().add(new BaritoneMaterialDebug());
+        Modules.get().add(new EnchantContainerAnalyzer());
+        Modules.get().add(new AutoEnchantTableBatch());
         Modules.get().add(new ModuleSetupsDynamic());
         Modules.get().add(new MasterMute());
         Modules.get().sortModules();

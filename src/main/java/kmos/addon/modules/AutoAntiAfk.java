@@ -15,6 +15,7 @@ import meteordevelopment.meteorclient.systems.modules.player.AntiAFK;
 import meteordevelopment.meteorclient.utils.misc.input.KeyAction;
 import meteordevelopment.meteorclient.utils.player.ChatUtils;
 import meteordevelopment.orbit.EventHandler;
+import net.minecraft.item.Item;
 
 public class AutoAntiAfk extends Module {
     private static final double POS_EPS = 0.0001;
@@ -68,6 +69,7 @@ public class AutoAntiAfk extends Module {
 
     private double lastX, lastY, lastZ;
     private float lastYaw, lastPitch;
+    private int lastInventorySignature = 0;
 
     private boolean prevAntiAfk = false;
     private boolean prevKillAura = false;
@@ -98,8 +100,9 @@ public class AutoAntiAfk extends Module {
         if (!afkActive) {
             boolean moved = playerMoved();
             boolean looked = cameraMoved();
-            if (moved || looked) {
-                lastActivityMs = System.currentTimeMillis();
+            boolean interacting = isPlayerInteracting() || inventoryChanged();
+            if (moved || looked || interacting) {
+                markActivity();
                 updateLastState();
             }
 
@@ -125,16 +128,18 @@ public class AutoAntiAfk extends Module {
 
     @EventHandler
     private void onKey(KeyEvent event) {
-        if (!exitOnInput.get()) return;
         if (event.action != KeyAction.Press) return;
+        markActivity();
+        if (!exitOnInput.get()) return;
         if (afkActive && inputGraceMs.get() > 0 && System.currentTimeMillis() - afkEnabledMs < inputGraceMs.get()) return;
         lastInputMs = System.currentTimeMillis();
     }
 
     @EventHandler
     private void onMouseClick(MouseClickEvent event) {
-        if (!exitOnInput.get()) return;
         if (event.action != KeyAction.Press) return;
+        markActivity();
+        if (!exitOnInput.get()) return;
         if (afkActive && inputGraceMs.get() > 0 && System.currentTimeMillis() - afkEnabledMs < inputGraceMs.get()) return;
         lastInputMs = System.currentTimeMillis();
     }
@@ -168,6 +173,39 @@ public class AutoAntiAfk extends Module {
         lastZ = mc.player.getZ();
         lastYaw = mc.player.getYaw();
         lastPitch = mc.player.getPitch();
+        lastInventorySignature = inventorySignature();
+    }
+
+    private void markActivity() {
+        lastActivityMs = System.currentTimeMillis();
+    }
+
+    private boolean isPlayerInteracting() {
+        if (mc.currentScreen != null) return true;
+        if (mc.options.useKey.isPressed()) return true;
+        if (mc.options.attackKey.isPressed()) return true;
+        if (mc.options.jumpKey.isPressed()) return true;
+        if (mc.options.sneakKey.isPressed()) return true;
+        if (mc.options.forwardKey.isPressed() || mc.options.backKey.isPressed()) return true;
+        if (mc.options.leftKey.isPressed() || mc.options.rightKey.isPressed()) return true;
+        if (mc.player.isUsingItem()) return true;
+        if (mc.player.handSwinging) return true;
+        return mc.crosshairTarget != null && mc.crosshairTarget.getType() != null && mc.options.pickItemKey.isPressed();
+    }
+
+    private boolean inventoryChanged() {
+        return inventorySignature() != lastInventorySignature;
+    }
+
+    private int inventorySignature() {
+        int hash = 1;
+        var inventory = mc.player.getInventory();
+        for (int slot = 0; slot < inventory.size(); slot++) {
+            var stack = inventory.getStack(slot);
+            hash = 31 * hash + Item.getRawId(stack.getItem());
+            hash = 31 * hash + stack.getCount();
+        }
+        return hash;
     }
 
     private void enableAfkModules() {

@@ -5,7 +5,9 @@ public final class InteractionGate {
         None,
         TradeFlow,
         ChestFlow,
-        AnvilFlow
+        AnvilFlow,
+        ShulkerFlow,
+        AutomationFlow
     }
 
     private static Owner activeOwner = Owner.None;

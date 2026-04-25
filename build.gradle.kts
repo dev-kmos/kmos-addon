@@ -1,3 +1,5 @@
+import org.gradle.api.tasks.Copy
+
 plugins {
     alias(libs.plugins.fabric.loom)
 }
@@ -30,6 +32,11 @@ dependencies {
 }
 
 tasks {
+    val configuredReleaseBuildsDir = providers.gradleProperty("kmos.releaseBuildsDir").orNull
+        ?: System.getenv("KMOS_RELEASE_BUILDS_DIR")
+    val releaseBuildsDir = configuredReleaseBuildsDir?.let { file(it) } ?: rootDir.parentFile.resolve("release-builds")
+    val releaseJarName = "${project.base.archivesName.get()}-${project.version}.jar"
+
     processResources {
         val propertyMap = mapOf(
             "version" to project.version,
@@ -63,5 +70,19 @@ tasks {
         options.release = 21
         options.compilerArgs.add("-Xlint:deprecation")
         options.compilerArgs.add("-Xlint:unchecked")
+    }
+
+    register<Copy>("copyReleaseBuild") {
+        group = "build"
+        description = "Copies the remapped release jar into the shared release-builds directory."
+        dependsOn("remapJar")
+        from(layout.buildDirectory.dir("libs")) {
+            include(releaseJarName)
+        }
+        into(releaseBuildsDir)
+    }
+
+    named("build") {
+        finalizedBy("copyReleaseBuild")
     }
 }
