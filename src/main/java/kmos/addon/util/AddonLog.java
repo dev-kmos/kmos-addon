@@ -20,25 +20,38 @@ public final class AddonLog {
     private static final Pattern DECIMAL_VEC = Pattern.compile("\\(-?\\d+(?:\\.\\d+)?,\\s*-?\\d+(?:\\.\\d+)?,\\s*-?\\d+(?:\\.\\d+)?\\)");
     private static final Pattern XYZ_ASSIGNMENTS = Pattern.compile("(x|y|z)=-?\\d+(?:\\.\\d+)?");
     private static final Pattern PLAIN_TRIPLE = Pattern.compile("\\b-?\\d+\\s+-?\\d+\\s+-?\\d+\\b");
-    private static final Pattern FILE_PATH = Pattern.compile("([A-Za-z]:\\\\[^\\s]+|/[^\\s]+)");
+    private static final Pattern FILE_PATH = Pattern.compile("([A-Za-z]:[\\\\/][^\\s\"'<>]+|/[^\\s\"'<>]+)");
+    private static final Pattern IPV4 = Pattern.compile("\\b(?:\\d{1,3}\\.){3}\\d{1,3}\\b");
+    private static final Pattern UUID = Pattern.compile("\\b[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}\\b");
+    private static final Pattern EMAIL = Pattern.compile("\\b[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\\.[A-Za-z]{2,}\\b");
+    private static final Pattern SECRET_ASSIGNMENT = Pattern.compile("(?i)\\b(password|passwd|token|secret|api[_-]?key)\\b\\s*[:=]\\s*[^\\s,;]+");
+    private static final Pattern BEARER_TOKEN = Pattern.compile("(?i)\\bbearer\\s+[A-Za-z0-9._~+/=-]{10,}");
+    private static final Pattern WEBHOOK_URL = Pattern.compile("https?://(?:canary\\.|ptb\\.)?discord(?:app)?\\.com/api/webhooks/[^\\s\"'<>]+");
     private static boolean initialized = false;
 
     private AddonLog() {
     }
 
     public static void info(String msg) {
-        KmosAddon.LOG.info(msg);
-        write("INFO", sanitize(msg), null);
+        String sanitized = sanitize(msg);
+        KmosAddon.LOG.info(sanitized);
+        write("INFO", sanitized, null);
     }
 
     public static void warn(String msg) {
-        KmosAddon.LOG.warn(msg);
-        write("WARN", sanitize(msg), null);
+        String sanitized = sanitize(msg);
+        KmosAddon.LOG.warn(sanitized);
+        write("WARN", sanitized, null);
     }
 
     public static void error(String msg, Throwable t) {
-        KmosAddon.LOG.error(msg, t);
-        write("ERROR", sanitize(msg), t);
+        String sanitized = sanitize(msg);
+        if (t == null) {
+            KmosAddon.LOG.error(sanitized);
+        } else {
+            KmosAddon.LOG.error(sanitized + " (" + sanitize(t.toString()) + ")");
+        }
+        write("ERROR", sanitized, t);
     }
 
     private static void write(String level, String msg, Throwable t) {
@@ -82,6 +95,12 @@ public final class AddonLog {
         sanitized = XYZ_ASSIGNMENTS.matcher(sanitized).replaceAll("$1=<redacted>");
         sanitized = sanitized.replaceAll("pos=-?\\d+(?:\\.\\d+)?,\\s*-?\\d+(?:\\.\\d+)?,\\s*-?\\d+(?:\\.\\d+)?", "pos=<redacted>");
         sanitized = PLAIN_TRIPLE.matcher(sanitized).replaceAll("<redacted> <redacted> <redacted>");
+        sanitized = WEBHOOK_URL.matcher(sanitized).replaceAll("<webhook>");
+        sanitized = BEARER_TOKEN.matcher(sanitized).replaceAll("Bearer <redacted>");
+        sanitized = SECRET_ASSIGNMENT.matcher(sanitized).replaceAll("$1=<redacted>");
+        sanitized = EMAIL.matcher(sanitized).replaceAll("<email>");
+        sanitized = UUID.matcher(sanitized).replaceAll("<uuid>");
+        sanitized = IPV4.matcher(sanitized).replaceAll("<ip>");
         sanitized = FILE_PATH.matcher(sanitized).replaceAll("<path>");
         return sanitized;
     }

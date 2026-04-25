@@ -15,6 +15,24 @@ tmp/
 meteordevelopment/
 run/
 run-*/
+release-builds/
+
+# Secrets / local configuration
+.env
+.env.*
+!.env.example
+local.properties
+*.local.properties
+secrets/
+secrets.*
+*.pem
+*.key
+*.p12
+*.pfx
+*.jks
+*.keystore
+*.har
+*.pcap
 
 # OS noise
 Thumbs.db
@@ -23,3 +41,15 @@ Thumbs.db
 # Local logs and crash files
 *.log
 hs_err_pid*
+logs/
+crash-reports/
+
+# Minecraft local data that can expose worlds, servers, waypoints or coordinates
+baritone/
+journeymap/
+meteor-client/
+screenshots/
+saves/
+server-resource-packs/
+servers.dat
+options.txt
