@@ -69,7 +69,7 @@ Release `2.7` is a major update over `v0.2.0`.
 
 The addon writes diagnostic logs to `logs/kmos-addon.log`.
 
-Log output is sanitized before being written to disk so that common sensitive values such as world coordinates and local file paths are redacted. Users can attach logs to GitHub issues more safely, but should still review them before sharing.
+Log output is sanitized before being written to disk and before being forwarded to the Minecraft logger so that common sensitive values such as world coordinates, local file paths, IP addresses, UUIDs and token-like values are redacted. Users can attach logs to GitHub issues more safely, but should still review them before sharing.
 
 ## Building
 

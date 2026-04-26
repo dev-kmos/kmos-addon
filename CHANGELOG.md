@@ -40,6 +40,8 @@ Release `2.7` is the main feature update after `v0.2.0`.
 ### Changed
 
 - Improved `Auto Anti AFK` activity detection so keyboard/mouse input, use/attack keys, movement keys, open screens, item use, hand swings and inventory changes refresh activity.
+- Hardened log sanitization so KMOS messages are redacted before reaching both `kmos-addon.log` and the main Minecraft logger.
+- Expanded repository ignores for local Minecraft data, logs, crash files, secrets and generated release artifacts.
 - Updated README module documentation for the newly added automation modules.
 - Updated version metadata from `0.2.0` to `2.7` for the public release.
 
